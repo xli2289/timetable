@@ -1,104 +1,255 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>活动记录器12313</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin-top: 50px;
-    }
-    .form {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .form select,
-    .form input,
-    .form button {
-      margin: 0 5px;
-      padding: 8px;
-    }
-    .activity-list {
-      list-style-type: none;
-      padding: 0;
-    }
-    .activity-list li {
-      background-color: #f9f9f9;
-      border: 1px solid #ddd;
-      padding: 10px;
-      margin-bottom: 5px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .activity-list button {
-      background-color: red;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      cursor: pointer;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每周课程表</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px; /* Distance between tabs and content */
+        }
+        .tab-button {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .tab-button.active {
+            background-color: #ccc;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            white-space: pre-line; /* Ensures line breaks are respected */
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 30%;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .completed-courses {
+            margin-top: 20px;
+        }
+        .completed-course-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+        }
+        .completed {
+            color: green;
+        }
+    </style>
 </head>
 <body>
-  <h1>活动记录器</h1>
-  <div class="form">
-    <select id="activityType">
-      <option value="语文">语文</option>
-      <option value="数学">数学</option>
-      <option value="英语">英语</option>
-    </select>
-    <input type="time" id="activityTime">
-    <button onclick="addActivity()">添加活动</button>
-  </div>
-  <ul id="activityList"></ul>
+    <h2>每周课程表</h2>
 
-  <script>
-    let activities = [];
+    <div class="tabs">
+        <button id="schedule-tab" class="tab-button active" onclick="showTab('schedule')">课程表</button>
+        <button id="records-tab" class="tab-button" onclick="showTab('records')">完成记录</button>
+    </div>
 
-    // 设置时间输入框的默认值为当前时间
-    function setCurrentTime() {
-      const now = new Date();
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      document.getElementById('activityTime').value = `${hours}:${minutes}`;
-    }
+    <div id="schedule" class="tab-content" style="display: block;">
+        <table id="course-table">
+            <thead>
+                <tr>
+                    <th>星期一</th>
+                    <th>星期二</th>
+                    <th>星期三</th>
+                    <th>星期四</th>
+                    <th>星期五</th>
+                    <th>星期六</th>
+                    <th>星期日</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Rows will be dynamically generated -->
+            </tbody>
+        </table>
+    </div>
 
-    setCurrentTime();
+    <div id="records" class="tab-content" style="display: none;">
+        <div class="completed-courses" id="completed-courses">
+            <!-- Completed courses will be dynamically generated -->
+        </div>
+    </div>
 
-    function addActivity() {
-      const activityType = document.getElementById('activityType').value;
-      const activityTime = document.getElementById('activityTime').value || setCurrentTime();
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>标记为已完成？</p>
+            <button onclick="markAsCompleted()">确定</button>
+            <button onclick="closeModal()">取消</button>
+        </div>
+    </div>
 
-      if (!activityTime) return;
+    <script>
+        const scheduleData = [
+            ["放学\n14:55", "放学\n14:05", "放学\n14:55", "放学\n17:05", "放学\n14:55", "户外运动\n11:30-12:30", "户外运动\n10:30-12:30"],
+            ["户外运动\n14:55-16:30", "户外运动\n14:05-16:30", "户外运动\n14:55-17:00", "户外运动\n17:00-18:00", "户外运动\n14:05-16:30", "户外运动\n14:05-16:30", "户外运动\n12:30-13:30"],
+            ["练字\n16:30-17:00", "户外运动\n16:30-18:00", "乒乓球\n17:00-18:30", "练字\n19:00-19:30", "练字\n16:30-17:00", "户外运动\n13:30-15:30", "英语网课\n14:20-15:30"],
+            ["乒乓球\n18:00-19:30", "练字、英语、数学\n19:00-20:00", "练字、拼音、英语\n20:00-21:00", "英语、数学\n20:30-21:00", "乒乓球\n18:00-19:30", "拼音、英语、数学\n19:00-20:00", "户外\n15:30-17:30"],
+            ["英语\n20:15-20:45", "睡前阅读\n21:00", "睡前阅读\n21:00", "睡前阅读\n21:00", "睡前阅读\n21:00", "睡前阅读\n19:00-20:00", "睡前阅读\n19:00-20:00"]
+        ];
 
-      const newActivity = { type: activityType, time: activityTime };
-      activities.push(newActivity);
+        let completedCourses = JSON.parse(localStorage.getItem("completedCourses")) || [];
+        let currentCell;
 
-      const activityList = document.getElementById('activityList');
-      const listItem = document.createElement('li');
-      listItem.textContent = `${newActivity.type} - ${newActivity.time}`;
+        function renderSchedule() {
+            const tbody = document.querySelector("#course-table tbody");
+            tbody.innerHTML = "";
 
-      const deleteButton = document.createElement('button');
-      deleteButton.textContent = '删除';
-      deleteButton.onclick = () => deleteActivity(listItem);
+            scheduleData.forEach(row => {
+                const tr = document.createElement("tr");
+                row.forEach(cell => {
+                    const td = document.createElement("td");
+                    td.textContent = cell;
+                    td.onclick = () => openModal(td, cell.split('\n')[0]);
+                    if (isCourseCompleted(cell.split('\n')[0], getCellIdentifier(td))) {
+                        td.classList.add("completed");
+                    }
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+        }
 
-      listItem.appendChild(deleteButton);
-      activityList.appendChild(listItem);
+        function isCourseCompleted(courseName, cellIdentifier) {
+            return completedCourses.some(course => course.name === courseName && course.cell === cellIdentifier);
+        }
 
-      setCurrentTime(); // 重置时间为当前时间
-    }
+        function getCellIdentifier(td) {
+            if (!td || !td.parentNode || typeof td.cellIndex !== 'number' || typeof td.parentNode.rowIndex !== 'number') {
+                console.error("Invalid cell element provided.");
+                return null;
+            }
+            const rowIndex = td.parentNode.rowIndex;
+            const colIndex = td.cellIndex;
+            return `${rowIndex}-${colIndex}`;
+        }
 
-    function deleteActivity(item) {
-      const index = Array.from(document.getElementById('activityList').children).indexOf(item);
-      activities.splice(index, 1);
-      item.remove();
-    }
-  </script>
+        function renderCompletedCourses() {
+            const container = document.getElementById("completed-courses");
+            container.innerHTML = "";
+            completedCourses.sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt)).forEach(course => {
+                const div = document.createElement("div");
+                div.className = "completed-course-item";
+                div.innerHTML = `${course.name} - ${new Date(course.completedAt).toLocaleString()} <button onclick="deleteCourse('${course.name}', '${course.cell}')">删除</button>`;
+                container.appendChild(div);
+            });
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll(".tab-button").forEach(button => button.classList.remove("active"));
+            document.getElementById(`${tabName}-tab`).classList.add("active");
+            document.querySelectorAll(".tab-content").forEach(content => content.style.display = "none");
+            document.getElementById(tabName).style.display = "block";
+        }
+
+        function openModal(td, courseName) {
+            if (!td || !td.parentNode || typeof td.cellIndex !== 'number' || typeof td.parentNode.rowIndex !== 'number') {
+                console.error("Invalid cell element provided.");
+                return;
+            }
+            document.getElementById("myModal").style.display = "block";
+            window.currentCourse = courseName;
+            currentCell = td;
+        }
+
+        function closeModal() {
+            document.getElementById("myModal").style.display = "none";
+            currentCell = null; // Clear the current cell after closing the modal
+        }
+
+        function markAsCompleted() {
+            if (!currentCell) {
+                console.error("Current cell is not set.");
+                closeModal();
+                return;
+            }
+            const now = new Date();
+            const cellIdentifier = getCellIdentifier(currentCell);
+            if (!cellIdentifier) {
+                console.error("Failed to get cell identifier.");
+                closeModal();
+                return;
+            }
+            completedCourses.push({ name: window.currentCourse, completedAt: now.toISOString(), cell: cellIdentifier });
+            localStorage.setItem("completedCourses", JSON.stringify(completedCourses));
+            currentCell.classList.add("completed"); // Add the 'completed' class to the current cell
+            closeModal();
+            renderCompletedCourses();
+        }
+
+        function deleteCourse(courseName, cellIdentifier) {
+            completedCourses = completedCourses.filter(course => !(course.name === courseName && course.cell === cellIdentifier));
+            localStorage.setItem("completedCourses", JSON.stringify(completedCourses));
+            const cellToUnmark = document.querySelector(`#course-table tbody tr:nth-child(${parseInt(cellIdentifier.split('-')[0]) + 1}) td:nth-child(${parseInt(cellIdentifier.split('-')[1]) + 1})`);
+            if (cellToUnmark) {
+                cellToUnmark.classList.remove("completed");
+            } else {
+                console.error("Cell to unmark not found.");
+            }
+            renderCompletedCourses();
+        }
+
+        document.querySelector(".close").onclick = closeModal;
+
+        window.onclick = function(event) {
+            if (event.target.id === "myModal") {
+                closeModal();
+            }
+        };
+
+        renderSchedule();
+        renderCompletedCourses();
+    </script>
 </body>
 </html>
 
