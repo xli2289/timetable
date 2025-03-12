@@ -8,14 +8,16 @@
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            background-color: #f4f4f9;
+            color: #333;
         }
         .tip {
-            background-color: #f9f9f9;
+            background-color: #eaeaea;
             border: 1px solid #ddd;
             padding: 10px;
             margin-bottom: 20px;
             border-radius: 5px;
-            color: #333;
+            color: #555;
         }
         .controls {
             display: flex;
@@ -35,6 +37,7 @@
             background-color: #f0f0f0;
             border-radius: 5px;
             font-weight: bold;
+            transition: background-color 0.3s;
         }
         .tab-button.active {
             background-color: #ccc;
@@ -43,10 +46,11 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         th, td {
-            border: 1px solid black;
-            padding: 8px;
+            border: 1px solid #ddd;
+            padding: 12px;
             text-align: center;
             font-weight: bold;
             white-space: pre-line; /* Ensures line breaks are respected */
@@ -70,13 +74,16 @@
             margin: 15% auto;
             padding: 20px;
             border: 1px solid #888;
+            border-radius: 8px;
             width: 30%;
+            max-width: 400px;
         }
         .close {
             color: #aaa;
             float: right;
             font-size: 28px;
             font-weight: bold;
+            cursor: pointer;
         }
         .close:hover,
         .close:focus {
@@ -153,24 +160,9 @@
             margin: 15% auto;
             padding: 20px;
             border: 1px solid #888;
+            border-radius: 8px;
             width: 30%;
-        }
-        .exchange-input {
-            margin-bottom: 10px;
-        }
-        .exchange-button {
-            margin-right: 10px;
-        }
-        .points-record {
-            margin-top: 20px;
-        }
-        .record-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
-            font-weight: bold;
+            max-width: 400px;
         }
         .add-points-modal {
             display: none;
@@ -188,10 +180,60 @@
             margin: 15% auto;
             padding: 20px;
             border: 1px solid #888;
+            border-radius: 8px;
             width: 30%;
+            max-width: 400px;
         }
-        .add-points-input {
-            margin-bottom: 10px;
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .input-group input,
+        .input-group select {
+            width: calc(100% - 22px);
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .button-container {
+            display: flex;
+            justify-content: flex-end;
+        }
+        .button-container button {
+            padding: 10px 20px;
+            margin-left: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .button-container .primary-button {
+            background-color: #007bff;
+            color: white;
+        }
+        .button-container .secondary-button {
+            background-color: #ccc;
+            color: #333;
+        }
+        .button-container .primary-button:hover,
+        .button-container .secondary-button:hover {
+            opacity: 0.8;
+        }
+        .points-record {
+            margin-top: 20px;
+        }
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -207,8 +249,8 @@
             总积分: <span id="points-count">0</span>
         </div>
         <div>
-            <button class="exchange-button-container" onclick="openAddPointsModal()">添加积分</button>
-            <button class="exchange-button-container" onclick="openExchangeModal()">兑换积分</button>
+            <button class="exchange-button-container primary-button" onclick="openAddPointsModal()">添加积分</button>
+            <button class="exchange-button-container primary-button" onclick="openExchangeModal()">兑换积分</button>
         </div>
     </div>
 
@@ -259,8 +301,10 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <p id="modal-message"></p>
-            <button id="confirm-button"></button>
-            <button onclick="closeModal()">关闭</button>
+            <div class="button-container">
+                <button id="confirm-button" class="primary-button"></button>
+                <button onclick="closeModal()" class="secondary-button">关闭</button>
+            </div>
         </div>
     </div>
 
@@ -268,16 +312,18 @@
         <div class="exchange-modal-content">
             <span class="close">&times;</span>
             <h3>兑换积分</h3>
-            <div class="exchange-input">
+            <div class="input-group">
                 <label for="exchange-points">积分数量:</label>
                 <input type="number" id="exchange-points" min="1">
             </div>
-            <div class="exchange-input">
+            <div class="input-group">
                 <label for="exchange-item">商品名称:</label>
                 <input type="text" id="exchange-item">
             </div>
-            <button class="exchange-button" onclick="exchangePoints()">兑换</button>
-            <button onclick="closeExchangeModal()">关闭</button>
+            <div class="button-container">
+                <button class="primary-button" onclick="exchangePoints()">兑换</button>
+                <button onclick="closeExchangeModal()" class="secondary-button">关闭</button>
+            </div>
         </div>
     </div>
 
@@ -285,7 +331,7 @@
         <div class="add-points-modal-content">
             <span class="close">&times;</span>
             <h3>添加积分</h3>
-            <div class="add-points-input">
+            <div class="input-group">
                 <label for="add-category">类别:</label>
                 <select id="add-category">
                     <option value="数学口算">数学口算</option>
@@ -296,16 +342,18 @@
                     <option value="乒乓球">乒乓球</option>
                 </select>
             </div>
-            <div class="add-points-input">
+            <div class="input-group">
                 <label for="add-points">积分数量:</label>
                 <input type="number" id="add-points" min="1">
             </div>
-            <div class="add-points-input">
+            <div class="input-group">
                 <label for="add-description">描述:</label>
-                <input type="text" id="add-description">
+                <input type="text" id="add-description" placeholder="（选填）">
             </div>
-            <button class="exchange-button" onclick="addPoints()">添加</button>
-            <button onclick="closeAddPointsModal()">关闭</button>
+            <div class="button-container">
+                <button class="primary-button" onclick="addPoints()">添加</button>
+                <button onclick="closeAddPointsModal()" class="secondary-button">关闭</button>
+            </div>
         </div>
     </div>
 
@@ -461,7 +509,7 @@
                 if (record.type === 'exchange') {
                     div.textContent = `-${record.points} 分: ${record.item} (第 ${record.week} 周)`;
                 } else if (record.type === 'add') {
-                    div.textContent = `+${record.points} 分: ${record.description} (第 ${record.week} 周)`;
+                    div.textContent = `+${record.points} 分: ${record.description ? record.description : '无描述'} (第 ${record.week} 周)`;
                 }
                 container.appendChild(div);
             });
@@ -640,11 +688,6 @@
 
             if (isNaN(pointsToAdd) || pointsToAdd <= 0) {
                 alert("请输入有效的积分数量。");
-                return;
-            }
-
-            if (description === "") {
-                alert("请输入描述。");
                 return;
             }
 
