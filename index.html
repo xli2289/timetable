@@ -235,6 +235,26 @@
             border-bottom: 1px solid #ddd;
             font-weight: bold;
         }
+        .action-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .action-buttons .add-points-button {
+            background-color: #28a745;
+            color: white;
+        }
+        .action-buttons .exchange-button {
+            background-color: #dc3545;
+            color: white;
+        }
+        .action-buttons .add-points-button:hover,
+        .action-buttons .exchange-button:hover {
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -248,9 +268,9 @@
         <div class="total-points" id="total-points">
             总积分: <span id="points-count">0</span>
         </div>
-        <div>
-            <button class="exchange-button-container primary-button" onclick="openAddPointsModal()">添加积分</button>
-            <button class="exchange-button-container primary-button" onclick="openExchangeModal()">兑换积分</button>
+        <div class="action-buttons">
+            <button class="add-points-button primary-button" onclick="openAddPointsModal()">添加积分</button>
+            <button class="exchange-button primary-button" onclick="openExchangeModal()">兑换积分</button>
         </div>
     </div>
 
@@ -361,10 +381,10 @@
 
     <script>
         const scheduleData = [
-            ["放学\n14:55", "放学\n14:05", "放学\n14:55", "放学\n17:05", "放学\n14:55", "户外运动\n11:30-12:30", "户外运动\n10:30-12:30"],
+            ["放学\n14:55", "放学\n14:05", "放学\n14:55", "放学\n17:05", "放学\n14:55", "英语、户外运动\n11:30-12:30", "户外运动\n10:30-12:30"],
             ["户外运动\n14:55-16:30", "户外运动\n14:05-16:30", "户外运动\n14:55-17:00", "户外运动\n17:00-18:00", "户外运动\n14:05-16:30", "户外运动\n14:05-16:30", "户外运动\n12:30-13:30"],
             ["练字\n16:30-17:00", "户外运动\n16:30-18:00", "乒乓球\n17:00-18:30", "练字\n19:00-19:30", "练字\n16:30-17:00", "户外运动\n14:05-16:30", "英语网课\n14:20-15:30"],
-            ["乒乓球\n18:00-19:30", "练字、英语、数学\n19:00-20:00", "练字、拼音、英语\n20:00-21:00", "英语、数学\n20:30-21:00", "乒乓球\n18:00-19:30", "拼音、英语、数学\n19:00-20:00", "户外\n15:30-17:30"],
+            ["乒乓球\n18:00-19:30", "英语、数学\n19:00-20:00", "英语\n20:00-21:00", "英语、数学\n20:30-21:00", "英语\n18:00-19:30", "数学\n19:00-20:00", "练字\n18:30-19:00"],
             ["英语\n20:15-20:45", "睡前阅读\n21:00", "睡前阅读\n21:00", "睡前阅读\n21:00", "睡前阅读\n21:00", "睡前阅读\n19:00-20:00", "睡前阅读\n19:00-20:00"]
         ];
 
