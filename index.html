@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>活动记录器</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    .form {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .form select,
+    .form input,
+    .form button {
+      margin: 0 5px;
+      padding: 8px;
+    }
+    .activity-list {
+      list-style-type: none;
+      padding: 0;
+    }
+    .activity-list li {
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .activity-list button {
+      background-color: red;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>活动记录器</h1>
+  <div class="form">
+    <select id="activityType">
+      <option value="语文">语文</option>
+      <option value="数学">数学</option>
+      <option value="英语">英语</option>
+    </select>
+    <input type="time" id="activityTime">
+    <button onclick="addActivity()">添加活动</button>
+  </div>
+  <ul id="activityList"></ul>
+
+  <script>
+    let activities = [];
+
+    // 设置时间输入框的默认值为当前时间
+    function setCurrentTime() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('activityTime').value = `${hours}:${minutes}`;
+    }
+
+    setCurrentTime();
+
+    function addActivity() {
+      const activityType = document.getElementById('activityType').value;
+      const activityTime = document.getElementById('activityTime').value || setCurrentTime();
+
+      if (!activityTime) return;
+
+      const newActivity = { type: activityType, time: activityTime };
+      activities.push(newActivity);
+
+      const activityList = document.getElementById('activityList');
+      const listItem = document.createElement('li');
+      listItem.textContent = `${newActivity.type} - ${newActivity.time}`;
+
+      const deleteButton = document.createElement('button');
+      deleteButton.textContent = '删除';
+      deleteButton.onclick = () => deleteActivity(listItem);
+
+      listItem.appendChild(deleteButton);
+      activityList.appendChild(listItem);
+
+      setCurrentTime(); // 重置时间为当前时间
+    }
+
+    function deleteActivity(item) {
+      const index = Array.from(document.getElementById('activityList').children).indexOf(item);
+      activities.splice(index, 1);
+      item.remove();
+    }
+  </script>
+</body>
+</html>
+
+
+
