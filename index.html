@@ -9,11 +9,24 @@
             font-family: Arial, sans-serif;
             margin: 20px;
         }
+        .tip {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            color: #333;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
         .tabs {
             display: flex;
             justify-content: center;
             gap: 10px;
-            margin-bottom: 20px; /* Distance between tabs and content */
         }
         .tab-button {
             padding: 10px 20px;
@@ -94,7 +107,6 @@
             color: green;
         }
         .total-points {
-            margin-top: 20px;
             font-size: 1.2em;
             font-weight: bold;
         }
@@ -149,7 +161,7 @@
         .exchange-button {
             margin-right: 10px;
         }
-        .exchange-record {
+        .points-record {
             margin-top: 20px;
         }
         .record-item {
@@ -160,22 +172,59 @@
             border-bottom: 1px solid #ddd;
             font-weight: bold;
         }
-        .exchange-button-container {
-            display: inline-block;
-            vertical-align: middle;
+        .add-points-modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .add-points-modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 30%;
+        }
+        .add-points-input {
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
     <h2>每周课程表</h2>
 
+    <div class="tip">
+        提示：点击课程可标记完成状态。
+    </div>
+
+    <div class="controls">
+        <div class="total-points" id="total-points">
+            总积分: <span id="points-count">0</span>
+        </div>
+        <div>
+            <button class="exchange-button-container" onclick="openAddPointsModal()">添加积分</button>
+            <button class="exchange-button-container" onclick="openExchangeModal()">兑换积分</button>
+        </div>
+    </div>
+
     <div class="tabs">
         <button id="schedule-tab" class="tab-button active" onclick="showTab('schedule')">课程表</button>
         <button id="records-tab" class="tab-button" onclick="showTab('records')">完成记录</button>
-        <button id="exchange-tab" class="tab-button" onclick="showTab('exchange')">兑换记录</button>
+        <button id="points-tab" class="tab-button" onclick="showTab('points')">积分记录</button>
     </div>
 
     <div id="schedule" class="tab-content" style="display: block;">
+        <div class="week-selector">
+            <label for="week-select">选择周数:</label>
+            <select id="week-select" onchange="loadWeekData()">
+                <!-- Options will be dynamically generated -->
+            </select>
+        </div>
         <table id="course-table">
             <thead>
                 <tr>
@@ -195,19 +244,14 @@
     </div>
 
     <div id="records" class="tab-content" style="display: none;">
-        <div class="total-points" id="total-points">
-            总积分: <span id="points-count">0</span>
-            <button class="exchange-button-container" onclick="openExchangeModal()">兑换积分</button>
-        </div>
         <div class="completed-courses" id="completed-courses">
             <!-- Completed courses will be dynamically generated -->
         </div>
     </div>
 
-    <div id="exchange" class="tab-content" style="display: none;">
-        <button onclick="openExchangeModal()">兑换积分</button>
-        <div class="exchange-record" id="exchange-record">
-            <!-- Exchange records will be dynamically generated -->
+    <div id="points" class="tab-content" style="display: none;">
+        <div class="points-record" id="points-record">
+            <!-- Points records will be dynamically generated -->
         </div>
     </div>
 
@@ -237,20 +281,90 @@
         </div>
     </div>
 
+    <div id="addPointsModal" class="add-points-modal">
+        <div class="add-points-modal-content">
+            <span class="close">&times;</span>
+            <h3>添加积分</h3>
+            <div class="add-points-input">
+                <label for="add-category">类别:</label>
+                <select id="add-category">
+                    <option value="数学口算">数学口算</option>
+                    <option value="数学扩展">数学扩展</option>
+                    <option value="语文练字">语文练字</option>
+                    <option value="兰登绘本">兰登绘本</option>
+                    <option value="英语听写">英语听写</option>
+                    <option value="乒乓球">乒乓球</option>
+                </select>
+            </div>
+            <div class="add-points-input">
+                <label for="add-points">积分数量:</label>
+                <input type="number" id="add-points" min="1">
+            </div>
+            <div class="add-points-input">
+                <label for="add-description">描述:</label>
+                <input type="text" id="add-description">
+            </div>
+            <button class="exchange-button" onclick="addPoints()">添加</button>
+            <button onclick="closeAddPointsModal()">关闭</button>
+        </div>
+    </div>
+
     <div id="toast" class="toast">+1 积分</div>
 
     <script>
         const scheduleData = [
             ["放学\n14:55", "放学\n14:05", "放学\n14:55", "放学\n17:05", "放学\n14:55", "户外运动\n11:30-12:30", "户外运动\n10:30-12:30"],
             ["户外运动\n14:55-16:30", "户外运动\n14:05-16:30", "户外运动\n14:55-17:00", "户外运动\n17:00-18:00", "户外运动\n14:05-16:30", "户外运动\n14:05-16:30", "户外运动\n12:30-13:30"],
-            ["练字\n16:30-17:00", "户外运动\n16:30-18:00", "乒乓球\n17:00-18:30", "练字\n19:00-19:30", "练字\n16:30-17:00", "户外运动\n13:30-15:30", "英语网课\n14:20-15:30"],
+            ["练字\n16:30-17:00", "户外运动\n16:30-18:00", "乒乓球\n17:00-18:30", "练字\n19:00-19:30", "练字\n16:30-17:00", "户外运动\n14:05-16:30", "英语网课\n14:20-15:30"],
             ["乒乓球\n18:00-19:30", "练字、英语、数学\n19:00-20:00", "练字、拼音、英语\n20:00-21:00", "英语、数学\n20:30-21:00", "乒乓球\n18:00-19:30", "拼音、英语、数学\n19:00-20:00", "户外\n15:30-17:30"],
             ["英语\n20:15-20:45", "睡前阅读\n21:00", "睡前阅读\n21:00", "睡前阅读\n21:00", "睡前阅读\n21:00", "睡前阅读\n19:00-20:00", "睡前阅读\n19:00-20:00"]
         ];
 
-        let completedCourses = JSON.parse(localStorage.getItem("completedCourses")) || [];
+        let weeksData = JSON.parse(localStorage.getItem("weeksData")) || {};
+        let currentWeek = parseInt(localStorage.getItem("currentWeek")) || 1;
+        let completedCourses = weeksData[currentWeek]?.completedCourses || [];
         let points = parseInt(localStorage.getItem("points")) || 0;
-        let exchangeRecords = JSON.parse(localStorage.getItem("exchangeRecords")) || [];
+        let exchangeRecords = weeksData[currentWeek]?.exchangeRecords || [];
+        let addPointsRecords = weeksData[currentWeek]?.addPointsRecords || [];
+
+        function renderWeekSelector() {
+            const weekSelect = document.getElementById("week-select");
+            weekSelect.innerHTML = "";
+            for (let i = 1; i <= 20; i++) {
+                const option = document.createElement("option");
+                option.value = i;
+                option.textContent = `第 ${i} 周`;
+                if (i === currentWeek) {
+                    option.selected = true;
+                }
+                weekSelect.appendChild(option);
+            }
+        }
+
+        function loadWeekData() {
+            currentWeek = parseInt(document.getElementById("week-select").value);
+            localStorage.setItem("currentWeek", currentWeek);
+            completedCourses = weeksData[currentWeek]?.completedCourses || [];
+            points = calculateTotalPoints();
+            exchangeRecords = weeksData[currentWeek]?.exchangeRecords || [];
+            addPointsRecords = weeksData[currentWeek]?.addPointsRecords || [];
+            localStorage.setItem("points", points.toString());
+            localStorage.setItem("exchangeRecords", JSON.stringify(exchangeRecords));
+            localStorage.setItem("addPointsRecords", JSON.stringify(addPointsRecords));
+            renderSchedule();
+            renderCompletedCourses();
+            renderPointsRecords();
+        }
+
+        function saveWeekData() {
+            weeksData[currentWeek] = {
+                completedCourses: completedCourses,
+                points: points,
+                exchangeRecords: exchangeRecords,
+                addPointsRecords: addPointsRecords
+            };
+            localStorage.setItem("weeksData", JSON.stringify(weeksData));
+        }
 
         function renderSchedule() {
             const tbody = document.querySelector("#course-table tbody");
@@ -290,14 +404,17 @@
             container.innerHTML = "";
 
             // Group courses by completion date
-            const groupedCourses = completedCourses.reduce((acc, course) => {
-                const dateKey = new Date(course.completedAt).toLocaleDateString();
-                if (!acc[dateKey]) {
-                    acc[dateKey] = [];
-                }
-                acc[dateKey].push(course);
-                return acc;
-            }, {});
+            const groupedCourses = {};
+
+            Object.values(weeksData).forEach((week, index) => {
+                week.completedCourses.forEach(course => {
+                    const dateKey = new Date(course.completedAt).toLocaleDateString();
+                    if (!groupedCourses[dateKey]) {
+                        groupedCourses[dateKey] = [];
+                    }
+                    groupedCourses[dateKey].push({ ...course, week: index + 1 });
+                });
+            });
 
             Object.keys(groupedCourses).sort((a, b) => new Date(b) - new Date(a)).forEach(dateKey => {
                 const dateGroupDiv = document.createElement("div");
@@ -311,7 +428,7 @@
                 groupedCourses[dateKey].forEach(course => {
                     const div = document.createElement("div");
                     div.className = "completed-course-item";
-                    div.innerHTML = `${course.name} (+${course.points} 分) <button onclick="deleteCourse('${course.name}', '${course.cell}')">删除</button>`;
+                    div.innerHTML = `${course.name} (第 ${course.week} 周) <button onclick="deleteCourse('${course.name}', '${course.cell}')">删除</button>`;
                     dateGroupDiv.appendChild(div);
                 });
 
@@ -321,14 +438,31 @@
             updateTotalPoints();
         }
 
-        function renderExchangeRecords() {
-            const container = document.getElementById("exchange-record");
+        function renderPointsRecords() {
+            const container = document.getElementById("points-record");
             container.innerHTML = "";
 
-            exchangeRecords.forEach(record => {
+            // Combine all records and sort them by date
+            const allRecords = [];
+            Object.values(weeksData).forEach((week, index) => {
+                week.exchangeRecords.forEach(record => {
+                    allRecords.push({ ...record, type: 'exchange', week: index + 1 });
+                });
+                week.addPointsRecords.forEach(record => {
+                    allRecords.push({ ...record, type: 'add', week: index + 1 });
+                });
+            });
+
+            allRecords.sort((a, b) => new Date(b.exchangedAt || b.addedAt) - new Date(a.exchangedAt || a.addedAt));
+
+            allRecords.forEach(record => {
                 const div = document.createElement("div");
                 div.className = "record-item";
-                div.textContent = `${record.item}: ${record.points} 分`;
+                if (record.type === 'exchange') {
+                    div.textContent = `-${record.points} 分: ${record.item} (第 ${record.week} 周)`;
+                } else if (record.type === 'add') {
+                    div.textContent = `+${record.points} 分: ${record.description} (第 ${record.week} 周)`;
+                }
                 container.appendChild(div);
             });
         }
@@ -383,14 +517,12 @@
                 closeModal();
                 return;
             }
-            completedCourses.push({ name: window.currentCourse, completedAt: now.toISOString(), cell: cellIdentifier, points: 1 });
+            completedCourses.push({ name: window.currentCourse, completedAt: now.toISOString(), cell: cellIdentifier });
             localStorage.setItem("completedCourses", JSON.stringify(completedCourses));
-            points += 1;
-            localStorage.setItem("points", points.toString());
             currentCell.classList.add("completed"); // Add the 'completed' class to the current cell
             closeModal();
-            renderCompletedCourses();
-            showToast();
+            renderCompletedCourses(); // Refresh the completed courses list
+            saveWeekData();
         }
 
         function unmarkAsCompleted() {
@@ -405,41 +537,37 @@
                 closeModal();
                 return;
             }
-            const removedCourse = completedCourses.find(course => course.name === window.currentCourse && course.cell === cellIdentifier);
-            if (removedCourse) {
-                points -= removedCourse.points;
-                localStorage.setItem("points", points.toString());
-            }
             completedCourses = completedCourses.filter(course => !(course.name === window.currentCourse && course.cell === cellIdentifier));
             localStorage.setItem("completedCourses", JSON.stringify(completedCourses));
             currentCell.classList.remove("completed"); // Remove the 'completed' class from the current cell
             closeModal();
-            renderCompletedCourses();
+            renderCompletedCourses(); // Refresh the completed courses list
+            saveWeekData();
         }
 
         function deleteCourse(courseName, cellIdentifier) {
-            const removedCourse = completedCourses.find(course => course.name === courseName && course.cell === cellIdentifier);
-            if (removedCourse) {
-                points -= removedCourse.points;
-                localStorage.setItem("points", points.toString());
-            }
             completedCourses = completedCourses.filter(course => !(course.name === courseName && course.cell === cellIdentifier));
             localStorage.setItem("completedCourses", JSON.stringify(completedCourses));
-            const cellToUnmark = document.querySelector(`#course-table tbody tr:nth-child(${parseInt(cellIdentifier.split('-')[0]) + 1}) td:nth-child(${parseInt(cellIdentifier.split('-')[1]) + 1})`);
-            if (cellToUnmark) {
-                cellToUnmark.classList.remove("completed");
-            } else {
-                console.error("Cell to unmark not found.");
-            }
-            renderCompletedCourses();
+
+            renderCompletedCourses(); // Refresh the completed courses list
+            saveWeekData();
         }
 
         function updateTotalPoints() {
             document.getElementById("points-count").textContent = points;
         }
 
-        function showToast() {
+        function calculateTotalPoints() {
+            let totalPoints = 0;
+            for (const week of Object.values(weeksData)) {
+                totalPoints += week.points || 0;
+            }
+            return totalPoints;
+        }
+
+        function showToast(message) {
             var toast = document.getElementById("toast");
+            toast.textContent = message;
             toast.className = "toast show";
             setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
         }
@@ -482,13 +610,63 @@
             localStorage.setItem("exchangeRecords", JSON.stringify(exchangeRecords));
 
             closeExchangeModal();
-            renderExchangeRecords();
+            renderPointsRecords();
             updateTotalPoints();
+            saveWeekData();
+            showToast(`-${pointsToExchange} 积分`);
+        }
+
+        function openAddPointsModal() {
+            document.getElementById("addPointsModal").style.display = "block";
+        }
+
+        function closeAddPointsModal() {
+            document.getElementById("addPointsModal").style.display = "none";
+        }
+
+        function addPoints() {
+            const addCategorySelect = document.getElementById("add-category");
+            const addPointsInput = document.getElementById("add-points");
+            const addDescriptionInput = document.getElementById("add-description");
+
+            const category = addCategorySelect.value;
+            const pointsToAdd = parseInt(addPointsInput.value);
+            const description = addDescriptionInput.value.trim();
+
+            if (category === "") {
+                alert("请选择一个类别。");
+                return;
+            }
+
+            if (isNaN(pointsToAdd) || pointsToAdd <= 0) {
+                alert("请输入有效的积分数量。");
+                return;
+            }
+
+            if (description === "") {
+                alert("请输入描述。");
+                return;
+            }
+
+            points += pointsToAdd;
+            localStorage.setItem("points", points.toString());
+
+            const now = new Date();
+            addPointsRecords.push({ category: category, description: description, points: pointsToAdd, addedAt: now.toISOString() });
+            localStorage.setItem("addPointsRecords", JSON.stringify(addPointsRecords));
+
+            closeAddPointsModal();
+            renderPointsRecords();
+            updateTotalPoints();
+            saveWeekData();
+            showToast(`+${pointsToAdd} 积分`);
         }
 
         document.querySelector(".close").onclick = closeModal;
 
         document.querySelector(".exchange-modal .close").onclick = closeExchangeModal;
+
+        document.querySelector(".add-points-modal .close").onclick = closeAddPointsModal;
 
         window.onclick = function(event) {
             if (event.target.id === "myModal") {
@@ -497,11 +675,13 @@
             if (event.target.id === "exchangeModal") {
                 closeExchangeModal();
             }
+            if (event.target.id === "addPointsModal") {
+                closeAddPointsModal();
+            }
         };
 
-        renderSchedule();
-        renderCompletedCourses();
-        renderExchangeRecords();
+        renderWeekSelector();
+        loadWeekData();
     </script>
 </body>
 </html>
