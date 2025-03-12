@@ -74,6 +74,14 @@
         .completed-courses {
             margin-top: 20px;
         }
+        .date-group {
+            margin-bottom: 10px;
+        }
+        .date-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
         .completed-course-item {
             display: flex;
             justify-content: space-between;
@@ -85,6 +93,77 @@
         .completed {
             color: green;
         }
+        .total-points {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 5px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+            font-size: 17px;
+        }
+        .toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+        @keyframes fadein {
+            from {bottom: 0; opacity: 0;}
+            to {bottom: 30px; opacity: 1;}
+        }
+        @keyframes fadeout {
+            from {bottom: 30px; opacity: 1;}
+            to {bottom: 0; opacity: 0;}
+        }
+        .exchange-modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .exchange-modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 30%;
+        }
+        .exchange-input {
+            margin-bottom: 10px;
+        }
+        .exchange-button {
+            margin-right: 10px;
+        }
+        .exchange-record {
+            margin-top: 20px;
+        }
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+        }
+        .exchange-button-container {
+            display: inline-block;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
@@ -93,6 +172,7 @@
     <div class="tabs">
         <button id="schedule-tab" class="tab-button active" onclick="showTab('schedule')">课程表</button>
         <button id="records-tab" class="tab-button" onclick="showTab('records')">完成记录</button>
+        <button id="exchange-tab" class="tab-button" onclick="showTab('exchange')">兑换记录</button>
     </div>
 
     <div id="schedule" class="tab-content" style="display: block;">
@@ -115,19 +195,49 @@
     </div>
 
     <div id="records" class="tab-content" style="display: none;">
+        <div class="total-points" id="total-points">
+            总积分: <span id="points-count">0</span>
+            <button class="exchange-button-container" onclick="openExchangeModal()">兑换积分</button>
+        </div>
         <div class="completed-courses" id="completed-courses">
             <!-- Completed courses will be dynamically generated -->
+        </div>
+    </div>
+
+    <div id="exchange" class="tab-content" style="display: none;">
+        <button onclick="openExchangeModal()">兑换积分</button>
+        <div class="exchange-record" id="exchange-record">
+            <!-- Exchange records will be dynamically generated -->
         </div>
     </div>
 
     <div id="myModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <p>标记为已完成？</p>
-            <button onclick="markAsCompleted()">确定</button>
-            <button onclick="closeModal()">取消</button>
+            <p id="modal-message"></p>
+            <button id="confirm-button"></button>
+            <button onclick="closeModal()">关闭</button>
         </div>
     </div>
+
+    <div id="exchangeModal" class="exchange-modal">
+        <div class="exchange-modal-content">
+            <span class="close">&times;</span>
+            <h3>兑换积分</h3>
+            <div class="exchange-input">
+                <label for="exchange-points">积分数量:</label>
+                <input type="number" id="exchange-points" min="1">
+            </div>
+            <div class="exchange-input">
+                <label for="exchange-item">商品名称:</label>
+                <input type="text" id="exchange-item">
+            </div>
+            <button class="exchange-button" onclick="exchangePoints()">兑换</button>
+            <button onclick="closeExchangeModal()">关闭</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">+1 积分</div>
 
     <script>
         const scheduleData = [
@@ -139,7 +249,8 @@
         ];
 
         let completedCourses = JSON.parse(localStorage.getItem("completedCourses")) || [];
-        let currentCell;
+        let points = parseInt(localStorage.getItem("points")) || 0;
+        let exchangeRecords = JSON.parse(localStorage.getItem("exchangeRecords")) || [];
 
         function renderSchedule() {
             const tbody = document.querySelector("#course-table tbody");
@@ -177,10 +288,47 @@
         function renderCompletedCourses() {
             const container = document.getElementById("completed-courses");
             container.innerHTML = "";
-            completedCourses.sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt)).forEach(course => {
+
+            // Group courses by completion date
+            const groupedCourses = completedCourses.reduce((acc, course) => {
+                const dateKey = new Date(course.completedAt).toLocaleDateString();
+                if (!acc[dateKey]) {
+                    acc[dateKey] = [];
+                }
+                acc[dateKey].push(course);
+                return acc;
+            }, {});
+
+            Object.keys(groupedCourses).sort((a, b) => new Date(b) - new Date(a)).forEach(dateKey => {
+                const dateGroupDiv = document.createElement("div");
+                dateGroupDiv.className = "date-group";
+
+                const dateHeader = document.createElement("div");
+                dateHeader.className = "date-header";
+                dateHeader.textContent = dateKey;
+                dateGroupDiv.appendChild(dateHeader);
+
+                groupedCourses[dateKey].forEach(course => {
+                    const div = document.createElement("div");
+                    div.className = "completed-course-item";
+                    div.innerHTML = `${course.name} (+${course.points} 分) <button onclick="deleteCourse('${course.name}', '${course.cell}')">删除</button>`;
+                    dateGroupDiv.appendChild(div);
+                });
+
+                container.appendChild(dateGroupDiv);
+            });
+
+            updateTotalPoints();
+        }
+
+        function renderExchangeRecords() {
+            const container = document.getElementById("exchange-record");
+            container.innerHTML = "";
+
+            exchangeRecords.forEach(record => {
                 const div = document.createElement("div");
-                div.className = "completed-course-item";
-                div.innerHTML = `${course.name} - ${new Date(course.completedAt).toLocaleString()} <button onclick="deleteCourse('${course.name}', '${course.cell}')">删除</button>`;
+                div.className = "record-item";
+                div.textContent = `${record.item}: ${record.points} 分`;
                 container.appendChild(div);
             });
         }
@@ -200,6 +348,21 @@
             document.getElementById("myModal").style.display = "block";
             window.currentCourse = courseName;
             currentCell = td;
+            const cellIdentifier = getCellIdentifier(currentCell);
+            if (!cellIdentifier) {
+                console.error("Failed to get cell identifier.");
+                closeModal();
+                return;
+            }
+            if (isCourseCompleted(window.currentCourse, cellIdentifier)) {
+                document.getElementById("modal-message").textContent = "取消已完成状态？";
+                document.getElementById("confirm-button").textContent = "取消";
+                document.getElementById("confirm-button").onclick = unmarkAsCompleted;
+            } else {
+                document.getElementById("modal-message").textContent = "标记为已完成？";
+                document.getElementById("confirm-button").textContent = "确定";
+                document.getElementById("confirm-button").onclick = markAsCompleted;
+            }
         }
 
         function closeModal() {
@@ -220,14 +383,46 @@
                 closeModal();
                 return;
             }
-            completedCourses.push({ name: window.currentCourse, completedAt: now.toISOString(), cell: cellIdentifier });
+            completedCourses.push({ name: window.currentCourse, completedAt: now.toISOString(), cell: cellIdentifier, points: 1 });
             localStorage.setItem("completedCourses", JSON.stringify(completedCourses));
+            points += 1;
+            localStorage.setItem("points", points.toString());
             currentCell.classList.add("completed"); // Add the 'completed' class to the current cell
+            closeModal();
+            renderCompletedCourses();
+            showToast();
+        }
+
+        function unmarkAsCompleted() {
+            if (!currentCell) {
+                console.error("Current cell is not set.");
+                closeModal();
+                return;
+            }
+            const cellIdentifier = getCellIdentifier(currentCell);
+            if (!cellIdentifier) {
+                console.error("Failed to get cell identifier.");
+                closeModal();
+                return;
+            }
+            const removedCourse = completedCourses.find(course => course.name === window.currentCourse && course.cell === cellIdentifier);
+            if (removedCourse) {
+                points -= removedCourse.points;
+                localStorage.setItem("points", points.toString());
+            }
+            completedCourses = completedCourses.filter(course => !(course.name === window.currentCourse && course.cell === cellIdentifier));
+            localStorage.setItem("completedCourses", JSON.stringify(completedCourses));
+            currentCell.classList.remove("completed"); // Remove the 'completed' class from the current cell
             closeModal();
             renderCompletedCourses();
         }
 
         function deleteCourse(courseName, cellIdentifier) {
+            const removedCourse = completedCourses.find(course => course.name === courseName && course.cell === cellIdentifier);
+            if (removedCourse) {
+                points -= removedCourse.points;
+                localStorage.setItem("points", points.toString());
+            }
             completedCourses = completedCourses.filter(course => !(course.name === courseName && course.cell === cellIdentifier));
             localStorage.setItem("completedCourses", JSON.stringify(completedCourses));
             const cellToUnmark = document.querySelector(`#course-table tbody tr:nth-child(${parseInt(cellIdentifier.split('-')[0]) + 1}) td:nth-child(${parseInt(cellIdentifier.split('-')[1]) + 1})`);
@@ -239,16 +434,74 @@
             renderCompletedCourses();
         }
 
+        function updateTotalPoints() {
+            document.getElementById("points-count").textContent = points;
+        }
+
+        function showToast() {
+            var toast = document.getElementById("toast");
+            toast.className = "toast show";
+            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+        }
+
+        function openExchangeModal() {
+            document.getElementById("exchangeModal").style.display = "block";
+        }
+
+        function closeExchangeModal() {
+            document.getElementById("exchangeModal").style.display = "none";
+        }
+
+        function exchangePoints() {
+            const exchangePointsInput = document.getElementById("exchange-points");
+            const exchangeItemInput = document.getElementById("exchange-item");
+
+            const pointsToExchange = parseInt(exchangePointsInput.value);
+            const itemName = exchangeItemInput.value.trim();
+
+            if (isNaN(pointsToExchange) || pointsToExchange <= 0) {
+                alert("请输入有效的积分数量。");
+                return;
+            }
+
+            if (itemName === "") {
+                alert("请输入商品名称。");
+                return;
+            }
+
+            if (points < pointsToExchange) {
+                alert("积分不足，无法兑换。");
+                return;
+            }
+
+            points -= pointsToExchange;
+            localStorage.setItem("points", points.toString());
+
+            const now = new Date();
+            exchangeRecords.push({ item: itemName, points: pointsToExchange, exchangedAt: now.toISOString() });
+            localStorage.setItem("exchangeRecords", JSON.stringify(exchangeRecords));
+
+            closeExchangeModal();
+            renderExchangeRecords();
+            updateTotalPoints();
+        }
+
         document.querySelector(".close").onclick = closeModal;
+
+        document.querySelector(".exchange-modal .close").onclick = closeExchangeModal;
 
         window.onclick = function(event) {
             if (event.target.id === "myModal") {
                 closeModal();
             }
+            if (event.target.id === "exchangeModal") {
+                closeExchangeModal();
+            }
         };
 
         renderSchedule();
         renderCompletedCourses();
+        renderExchangeRecords();
     </script>
 </body>
 </html>
