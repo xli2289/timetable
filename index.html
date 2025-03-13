@@ -1,222 +1,48 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>课程表</title>
+    <title>课程表与积分记录</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f9;
-            position: relative;
-        }
-        h1 {
-            color: #333;
             text-align: center;
-        }
-        table {
-            width: 80%;
-            margin: 0 auto;
-            border-collapse: separate;
-            border-spacing: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        th, td {
-            border: 2px solid #ddd;
-            padding: 15px;
-            text-align: center;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-        .monday { background-color: #4CAF50; color: white; }
-        .tuesday { background-color: #2196F3; color: white; }
-        .wednesday { background-color: #FFC107; color: white; }
-        .thursday { background-color: #9C27B0; color: white; }
-        .friday { background-color: #E91E63; color: white; }
-        .saturday { background-color: #FF5722; color: white; }
-        .sunday { background-color: #795548; color: white; }
-
-        .hidden {
-            display: none;
-        }
-
-        .score-table {
-            width: 80%;
-            margin: 20px auto;
-            border-collapse: collapse;
-        }
-        .score-table th, .score-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        .score-table th {
-            background-color: #f2f2f2;
-        }
-        .delete-btn {
-            cursor: pointer;
-            color: red;
-            font-weight: bold;
-        }
-
-        /* Button styles */
-        .btn {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
-        .btn:hover {
-            background-color: #0056b3;
-        }
-
-        /* Modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
             padding: 20px;
-            border: 1px solid #888;
-            width: 300px;
-            text-align: center;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
         }
 
-        /* Highlight total score */
         .total-score-container {
-            text-align: center;
             margin-bottom: 20px;
         }
+
         .total-score-label {
-            font-size: 18px;
-            color: #333;
-        }
-        .total-score-value {
-            font-size: 24px;
             font-weight: bold;
-            color: #e91e63; /* Bright pink to highlight */
         }
 
-        /* Exchange modal styles */
-        .exchange-modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
+        table {
             width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
+            border-collapse: collapse;
+            margin-top: 20px;
         }
-        .exchange-modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 400px;
-            text-align: left;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
         }
-        .exchange-close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .exchange-close:hover,
-        .exchange-close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .product-list {
-            list-style-type: none;
-            padding: 0;
-        }
-        .product-item {
-            margin-bottom: 10px;
-        }
-        .product-name {
-            font-weight: bold;
-        }
-        .product-price {
-            color: #e91e63;
-        }
-        .exchange-btn {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
-        .exchange-btn:hover {
-            background-color: #218838;
-        }
-        .exchange-message {
-            margin-top: 10px;
-            color: red;
+
+        th {
+            background-color: #f2f2f2;
         }
     </style>
 </head>
-<body>
-    <h1>课程表</h1>
-    <div style="text-align: center;">
-        <button class="btn" onclick="showSchedule()">课程表</button>
-        <button class="btn" onclick="showScores()">积分记录</button>
-    </div>
 
+<body>
     <div id="schedule" class="">
         <div class="total-score-container">
             <span class="total-score-label">总积分:</span>
             <span class="total-score-value" id="totalScoreSchedule">0</span>
-            <button class="btn" onclick="openExchangeModal()">兑换积分</button>
         </div>
         <table>
             <thead>
@@ -279,189 +105,6 @@
             </tbody>
         </table>
     </div>
-
-    <div id="scores" class="hidden">
-        <h2>积分记录</h2>
-        <div class="total-score-container">
-            <span class="total-score-label">总积分:</span>
-            <span class="total-score-value" id="totalScoreScores">0</span>
-            <button class="btn" onclick="openExchangeModal()">兑换积分</button>
-        </div>
-        <table class="score-table">
-            <thead>
-                <tr>
-                    <th>日期</th>
-                    <th>描述</th>
-                    <th>分数值</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody id="scoreList">
-            </tbody>
-        </table>
-    </div>
-
-    <!-- The Modal -->
-    <div id="myModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <p>参与 "<span id="activityName"></span>" 活动获得 <span id="activityScore">1</span> 分！</p>
-        </div>
-    </div>
-
-    <!-- Exchange Modal -->
-    <div id="exchangeModal" class="exchange-modal">
-        <div class="exchange-modal-content">
-            <span class="exchange-close">&times;</span>
-            <h3>兑换商品</h3>
-            <ul class="product-list">
-                <li class="product-item">
-                    <span class="product-name">哪吒卡</span>
-                    <span class="product-price">9分</span>
-                    <button class="exchange-btn" onclick="exchangeProduct('哪吒卡', 9)">兑换</button>
-                </li>
-            </ul>
-            <p class="exchange-message" id="exchangeMessage"></p>
-        </div>
-    </div>
-
-    <script>
-        // 从 localStorage 中获取积分数据
-        let scores = JSON.parse(localStorage.getItem('scores')) || [];
-        let totalScore = JSON.parse(localStorage.getItem('totalScore')) || 0;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('#schedule td[data-activity]').forEach(cell => {
-                cell.addEventListener('click', () => {
-                    const activityName = cell.getAttribute('data-activity');
-                    addScore(activityName, 1);
-                    showModal(activityName);
-                });
-            });
-
-            // Get the modals
-            var modal = document.getElementById("myModal");
-            var exchangeModal = document.getElementById("exchangeModal");
-
-            // Get the <span> elements that close the modals
-            var span = document.getElementsByClassName("close")[0];
-            var exchangeSpan = document.getElementsByClassName("exchange-close")[0];
-
-            // When the user clicks on <span> (x), close the modals
-            span.onclick = function() {
-                modal.style.display = "none";
-            }
-            exchangeSpan.onclick = function() {
-                exchangeModal.style.display = "none";
-            }
-
-            // When the user clicks anywhere outside of the modals, close them
-            window.onclick = function(event) {
-                if (event.target == modal || event.target == exchangeModal) {
-                    modal.style.display = "none";
-                    exchangeModal.style.display = "none";
-                }
-            }
-
-            // 初始化总积分显示
-            document.getElementById('totalScoreSchedule').textContent = totalScore;
-            document.getElementById('totalScoreScores').textContent = totalScore;
-            renderScores();
-        });
-
-        function showSchedule() {
-            document.getElementById('schedule').classList.remove('hidden');
-            document.getElementById('scores').classList.add('hidden');
-            document.getElementById('totalScoreSchedule').textContent = totalScore;
-        }
-
-        function showScores() {
-            document.getElementById('schedule').classList.add('hidden');
-            document.getElementById('scores').classList.remove('hidden');
-            document.getElementById('totalScoreScores').textContent = totalScore;
-            renderScores();
-        }
-
-        function addScore(name, score) {
-            const date = new Date().toLocaleDateString();
-            scores.push({ date, description: `参与 "${name}" 活动`, score });
-            totalScore += score;
-            document.getElementById('totalScoreSchedule').textContent = totalScore;
-            document.getElementById('totalScoreScores').textContent = totalScore;
-            renderScores();
-            // 保存积分数据到 localStorage
-            localStorage.setItem('scores', JSON.stringify(scores));
-            localStorage.setItem('totalScore', JSON.stringify(totalScore));
-        }
-
-        function removeScore(index) {
-            totalScore -= scores[index].score;
-            document.getElementById('totalScoreSchedule').textContent = totalScore;
-            document.getElementById('totalScoreScores').textContent = totalScore;
-            scores.splice(index, 1);
-            renderScores();
-            // 保存积分数据到 localStorage
-            localStorage.setItem('scores', JSON.stringify(scores));
-            localStorage.setItem('totalScore', JSON.stringify(totalScore));
-        }
-
-        function renderScores() {
-            const scoreList = document.getElementById('scoreList');
-            scoreList.innerHTML = '';
-
-            // Grouping scores by date
-            const groupedScores = {};
-            scores.forEach(item => {
-                if (!groupedScores[item.date]) {
-                    groupedScores[item.date] = [];
-                }
-                groupedScores[item.date].push(item);
-            });
-
-            for (const date in groupedScores) {
-                const group = groupedScores[date];
-                group.forEach((item, index) => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${date}</td>
-                        <td>${item.description}</td>
-                        <td>${item.score}</td>
-                        <td><span class="delete-btn" onclick="removeScore(${index})">删除</span></td>
-                    `;
-                    scoreList.appendChild(row);
-                });
-            }
-        }
-
-        function showModal(activityName) {
-            var modal = document.getElementById("myModal");
-            document.getElementById("activityName").innerText = activityName;
-            document.getElementById("activityScore").innerText = 1;
-            modal.style.display = "block";
-        }
-
-        function openExchangeModal() {
-            var exchangeModal = document.getElementById("exchangeModal");
-            document.getElementById("exchangeMessage").innerText = "";
-            exchangeModal.style.display = "block";
-        }
-
-        function exchangeProduct(productName, productPrice) {
-            if (totalScore >= productPrice) {
-                const date = new Date().toLocaleDateString();
-                scores.push({ date, description: `兑换 ${productName}`, score: -productPrice });
-                totalScore -= productPrice;
-                document.getElementById('totalScoreSchedule').textContent = totalScore;
-                document.getElementById('totalScoreScores').textContent = totalScore;
-                renderScores();
-                document.getElementById("exchangeMessage").innerText = `成功兑换 ${productName}!`;
-                // 保存积分数据到 localStorage
-                localStorage.setItem('scores', JSON.stringify(scores));
-                localStorage.setItem('totalScore', JSON.stringify(totalScore));
-            } else {
-                document.getElementById("exchangeMessage").innerText = `积分不足，无法兑换 ${productName}.`;
-            }
-        }
-    </script>
 </body>
+
 </html>
