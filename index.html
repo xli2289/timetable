@@ -326,8 +326,9 @@
     </div>
 
     <script>
-        let scores = [];
-        let totalScore = 0;
+        // 从 localStorage 中获取积分数据
+        let scores = JSON.parse(localStorage.getItem('scores')) || [];
+        let totalScore = JSON.parse(localStorage.getItem('totalScore')) || 0;
 
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('#schedule td[data-activity]').forEach(cell => {
@@ -361,6 +362,11 @@
                     exchangeModal.style.display = "none";
                 }
             }
+
+            // 初始化总积分显示
+            document.getElementById('totalScoreSchedule').textContent = totalScore;
+            document.getElementById('totalScoreScores').textContent = totalScore;
+            renderScores();
         });
 
         function showSchedule() {
@@ -383,6 +389,9 @@
             document.getElementById('totalScoreSchedule').textContent = totalScore;
             document.getElementById('totalScoreScores').textContent = totalScore;
             renderScores();
+            // 保存积分数据到 localStorage
+            localStorage.setItem('scores', JSON.stringify(scores));
+            localStorage.setItem('totalScore', JSON.stringify(totalScore));
         }
 
         function removeScore(index) {
@@ -391,6 +400,9 @@
             document.getElementById('totalScoreScores').textContent = totalScore;
             scores.splice(index, 1);
             renderScores();
+            // 保存积分数据到 localStorage
+            localStorage.setItem('scores', JSON.stringify(scores));
+            localStorage.setItem('totalScore', JSON.stringify(totalScore));
         }
 
         function renderScores() {
@@ -443,6 +455,9 @@
                 document.getElementById('totalScoreScores').textContent = totalScore;
                 renderScores();
                 document.getElementById("exchangeMessage").innerText = `成功兑换 ${productName}!`;
+                // 保存积分数据到 localStorage
+                localStorage.setItem('scores', JSON.stringify(scores));
+                localStorage.setItem('totalScore', JSON.stringify(totalScore));
             } else {
                 document.getElementById("exchangeMessage").innerText = `积分不足，无法兑换 ${productName}.`;
             }
