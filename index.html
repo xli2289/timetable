@@ -1,224 +1,198 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>课程表</title>
+    <title>课程表与积分记录</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            text-align: center;
+            padding: 20px;
             background-color: #f4f4f9;
-            position: relative;
         }
-        h1 {
-            color: #333;
-            text-align: center;
+
+        .total-score-container {
+            margin-bottom: 20px;
+            background-color: #e0e0e0; /* 添加背景颜色 */
+            padding: 10px; /* 增加内边距 */
+            border-radius: 5px; /* 圆角 */
+            display: inline-block; /* 使容器宽度适应内容 */
         }
+
+        .total-score-label {
+            font-weight: bold;
+            font-size: 1.5em; /* 放大字体 */
+            color: #333; /* 深色文字 */
+        }
+
+        .total-score-value {
+            font-weight: bold;
+            font-size: 2em; /* 继续放大字体 */
+            color: #ff6347; /* 突出显示分数的颜色 */
+        }
+
         table {
-            width: 80%;
-            margin: 0 auto;
-            border-collapse: separate;
-            border-spacing: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        th, td {
-            border: 2px solid #ddd;
-            padding: 15px;
-            text-align: center;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-        .monday { background-color: #4CAF50; color: white; }
-        .tuesday { background-color: #2196F3; color: white; }
-        .wednesday { background-color: #FFC107; color: white; }
-        .thursday { background-color: #9C27B0; color: white; }
-        .friday { background-color: #E91E63; color: white; }
-        .saturday { background-color: #FF5722; color: white; }
-        .sunday { background-color: #795548; color: white; }
-
-        .hidden {
-            display: none;
-        }
-
-        .score-table {
-            width: 80%;
-            margin: 20px auto;
+            width: 100%;
             border-collapse: collapse;
+            margin-top: 20px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        .score-table th, .score-table td {
+
+        th,
+        td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 10px;
+            cursor: pointer;
             text-align: left;
         }
-        .score-table th {
-            background-color: #f2f2f2;
-        }
-        .delete-btn {
-            cursor: pointer;
-            color: red;
-            font-weight: bold;
+
+        th.monday {
+            background-color: #FFCDD2; /* 浅红 */
         }
 
-        /* Button styles */
-        .btn {
-            background-color: #007bff;
+        th.tuesday {
+            background-color: #BBDEFB; /* 浅蓝 */
+        }
+
+        th.wednesday {
+            background-color: #FFF9C4; /* 浅黄 */
+        }
+
+        th.thursday {
+            background-color: #DCEDC8; /* 浅绿 */
+        }
+
+        th.friday {
+            background-color: #FFE0B2; /* 浅橙 */
+        }
+
+        th.saturday {
+            background-color: #F8BBD0; /* 浅粉 */
+        }
+
+        th.sunday {
+            background-color: #E1BEE7; /* 浅紫 */
+        }
+
+        /* 新增按钮样式 */
+        .switch-btn {
+            background-color: #007BFF;
             color: white;
             border: none;
             padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
+            margin: 5px;
             cursor: pointer;
             border-radius: 5px;
             transition: background-color 0.3s ease;
         }
-        .btn:hover {
+
+        .switch-btn:hover {
             background-color: #0056b3;
         }
 
-        /* Modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
+        /* 选中按钮的特殊样式 */
+        .switch-btn.active {
+            background-color: #0056b3;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
         }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
+
+        /* 隐藏除课程表外的内容 */
+        #record-list,
+        #adjust-score,
+        #reward-list {
+            display: none;
+        }
+
+        /* 提示框样式 */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px 40px; /* 放大尺寸 */
+            border-radius: 10px; /* 圆角 */
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 1.5s ease-out;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* 添加阴影 */
+        }
+
+        .toast.error {
+            background-color: #F44336;
+        }
+
+        /* 调整积分界面样式 */
+        #adjust-score {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
             padding: 20px;
-            border: 1px solid #888;
-            width: 300px;
-            text-align: center;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
+            max-width: 300px;
+            margin: 0 auto;
         }
 
-        /* Highlight total score */
-        .total-score-container {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .total-score-label {
-            font-size: 18px;
-            color: #333;
-        }
-        .total-score-value {
-            font-size: 24px;
+        #adjust-score label {
+            font-size: 1em;
             font-weight: bold;
-            color: #e91e63; /* Bright pink to highlight */
-        }
-
-        /* Exchange modal styles */
-        .exchange-modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-        }
-        .exchange-modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 400px;
             text-align: left;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            width: 100%;
+            text-align: left;
         }
-        .exchange-close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
+
+        #adjust-score input[type="number"],
+        #adjust-score input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+            box-sizing: border-box;
         }
-        .exchange-close:hover,
-        .exchange-close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .product-list {
-            list-style-type: none;
-            padding: 0;
-        }
-        .product-item {
-            margin-bottom: 10px;
-        }
-        .product-name {
-            font-weight: bold;
-        }
-        .product-price {
-            color: #e91e63;
-        }
-        .exchange-btn {
+
+        #adjust-score button {
+            width: 100%; /* 使按钮宽度与输入框相同 */
+            margin-top: 10px; /* 增加按钮与输入框之间的间距 */
             background-color: #28a745;
             color: white;
             border: none;
             padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
             cursor: pointer;
             border-radius: 5px;
             transition: background-color 0.3s ease;
+            font-size: 1em;
         }
-        .exchange-btn:hover {
+
+        #adjust-score button:hover {
             background-color: #218838;
-        }
-        .exchange-message {
-            margin-top: 10px;
-            color: red;
         }
     </style>
 </head>
-<body>
-    <h1>课程表</h1>
-    <div style="text-align: center;">
-        <button class="btn" onclick="showSchedule()">课程表</button>
-        <button class="btn" onclick="showScores()">积分记录</button>
-    </div>
 
+<body>
     <div id="schedule" class="">
         <div class="total-score-container">
             <span class="total-score-label">总积分:</span>
             <span class="total-score-value" id="totalScoreSchedule">0</span>
-            <button class="btn" onclick="openExchangeModal()">兑换积分</button>
         </div>
-        <table>
+        <!-- 新增四个切换按钮 -->
+        <div>
+            <button class="switch-btn active" onclick="showSchedule(this)">课程表</button>
+            <button class="switch-btn" onclick="showRecordList(this)">分数记录</button>
+            <button class="switch-btn" onclick="showAdjustScore(this)">调整积分</button>
+            <button class="switch-btn" onclick="showRewardList(this)">兑换奖励</button>
+        </div>
+        <!-- 课程表 -->
+        <table id="schedule-table">
             <thead>
                 <tr>
                     <th class="monday">周一</th>
@@ -278,190 +252,253 @@
                 </tr>
             </tbody>
         </table>
-    </div>
-
-    <div id="scores" class="hidden">
-        <h2>积分记录</h2>
-        <div class="total-score-container">
-            <span class="total-score-label">总积分:</span>
-            <span class="total-score-value" id="totalScoreScores">0</span>
-            <button class="btn" onclick="openExchangeModal()">兑换积分</button>
-        </div>
-        <table class="score-table">
+        <!-- 分数记录列表 -->
+        <table id="record-list">
             <thead>
                 <tr>
-                    <th>日期</th>
+                    <th>完成时间</th>
                     <th>描述</th>
-                    <th>分数值</th>
+                    <th>分值</th>
                     <th>操作</th>
                 </tr>
             </thead>
-            <tbody id="scoreList">
+            <tbody>
+                <!-- 这里可以添加具体的完成记录 -->
+            </tbody>
+        </table>
+        <!-- 调整积分界面 -->
+        <div id="adjust-score">
+            <label for="score-input">输入积分:</label>
+            <input type="number" id="score-input">
+            <label for="remark-input">备注信息:</label>
+            <input type="text" id="remark-input">
+            <button onclick="saveScore()">保存</button>
+        </div>
+        <!-- 兑换奖励列表 -->
+        <table id="reward-list">
+            <thead>
+                <tr>
+                    <th>奖励名称</th>
+                    <th>分值</th>
+                    <th>兑换按钮</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 新增的两条奖励数据 -->
+                <tr>
+                    <td>哪吒卡</td>
+                    <td>9</td>
+                    <td><button onclick="exchangeReward('哪吒卡', 9)">兑换</button></td>
+                </tr>
+                <tr>
+                    <td>生日礼物</td>
+                    <td>999</td>
+                    <td><button onclick="exchangeReward('生日礼物', 999)">兑换</button></td>
+                </tr>
             </tbody>
         </table>
     </div>
-
-    <!-- The Modal -->
-    <div id="myModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <p>参与 "<span id="activityName"></span>" 活动获得 <span id="activityScore">1</span> 分！</p>
-        </div>
-    </div>
-
-    <!-- Exchange Modal -->
-    <div id="exchangeModal" class="exchange-modal">
-        <div class="exchange-modal-content">
-            <span class="exchange-close">&times;</span>
-            <h3>兑换商品</h3>
-            <ul class="product-list">
-                <li class="product-item">
-                    <span class="product-name">哪吒卡</span>
-                    <span class="product-price">9分</span>
-                    <button class="exchange-btn" onclick="exchangeProduct('哪吒卡', 9)">兑换</button>
-                </li>
-            </ul>
-            <p class="exchange-message" id="exchangeMessage"></p>
-        </div>
-    </div>
-
     <script>
-        // 从 localStorage 中获取积分数据
-        let scores = JSON.parse(localStorage.getItem('scores')) || [];
-        let totalScore = JSON.parse(localStorage.getItem('totalScore')) || 0;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('#schedule td[data-activity]').forEach(cell => {
-                cell.addEventListener('click', () => {
-                    const activityName = cell.getAttribute('data-activity');
-                    addScore(activityName, 1);
-                    showModal(activityName);
-                });
+        function removeActiveClass() {
+            const buttons = document.querySelectorAll('.switch-btn');
+            buttons.forEach(button => {
+                button.classList.remove('active');
             });
-
-            // Get the modals
-            var modal = document.getElementById("myModal");
-            var exchangeModal = document.getElementById("exchangeModal");
-
-            // Get the <span> elements that close the modals
-            var span = document.getElementsByClassName("close")[0];
-            var exchangeSpan = document.getElementsByClassName("exchange-close")[0];
-
-            // When the user clicks on <span> (x), close the modals
-            span.onclick = function() {
-                modal.style.display = "none";
-            }
-            exchangeSpan.onclick = function() {
-                exchangeModal.style.display = "none";
-            }
-
-            // When the user clicks anywhere outside of the modals, close them
-            window.onclick = function(event) {
-                if (event.target == modal || event.target == exchangeModal) {
-                    modal.style.display = "none";
-                    exchangeModal.style.display = "none";
-                }
-            }
-
-            // 初始化总积分显示
-            document.getElementById('totalScoreSchedule').textContent = totalScore;
-            document.getElementById('totalScoreScores').textContent = totalScore;
-            renderScores();
-        });
-
-        function showSchedule() {
-            document.getElementById('schedule').classList.remove('hidden');
-            document.getElementById('scores').classList.add('hidden');
-            document.getElementById('totalScoreSchedule').textContent = totalScore;
         }
 
-        function showScores() {
-            document.getElementById('schedule').classList.add('hidden');
-            document.getElementById('scores').classList.remove('hidden');
-            document.getElementById('totalScoreScores').textContent = totalScore;
-            renderScores();
+        function showSchedule(button) {
+            removeActiveClass();
+            button.classList.add('active');
+            document.getElementById('schedule-table').style.display = 'table';
+            document.getElementById('record-list').style.display = 'none';
+            document.getElementById('adjust-score').style.display = 'none';
+            document.getElementById('reward-list').style.display = 'none';
         }
 
-        function addScore(name, score) {
-            const date = new Date().toLocaleDateString();
-            scores.push({ date, description: `参与 "${name}" 活动`, score });
-            totalScore += score;
-            document.getElementById('totalScoreSchedule').textContent = totalScore;
-            document.getElementById('totalScoreScores').textContent = totalScore;
-            renderScores();
-            // 保存积分数据到 localStorage
-            localStorage.setItem('scores', JSON.stringify(scores));
-            localStorage.setItem('totalScore', JSON.stringify(totalScore));
+        function showRecordList(button) {
+            removeActiveClass();
+            button.classList.add('active');
+            document.getElementById('schedule-table').style.display = 'none';
+            document.getElementById('record-list').style.display = 'table';
+            document.getElementById('adjust-score').style.display = 'none';
+            document.getElementById('reward-list').style.display = 'none';
+            loadRecords();
         }
 
-        function removeScore(index) {
-            totalScore -= scores[index].score;
-            document.getElementById('totalScoreSchedule').textContent = totalScore;
-            document.getElementById('totalScoreScores').textContent = totalScore;
-            scores.splice(index, 1);
-            renderScores();
-            // 保存积分数据到 localStorage
-            localStorage.setItem('scores', JSON.stringify(scores));
-            localStorage.setItem('totalScore', JSON.stringify(totalScore));
+        function showAdjustScore(button) {
+            removeActiveClass();
+            button.classList.add('active');
+            document.getElementById('schedule-table').style.display = 'none';
+            document.getElementById('record-list').style.display = 'none';
+            document.getElementById('adjust-score').style.display = 'block';
+            document.getElementById('reward-list').style.display = 'none';
         }
 
-        function renderScores() {
-            const scoreList = document.getElementById('scoreList');
-            scoreList.innerHTML = '';
-
-            // Grouping scores by date
-            const groupedScores = {};
-            scores.forEach(item => {
-                if (!groupedScores[item.date]) {
-                    groupedScores[item.date] = [];
-                }
-                groupedScores[item.date].push(item);
-            });
-
-            for (const date in groupedScores) {
-                const group = groupedScores[date];
-                group.forEach((item, index) => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${date}</td>
-                        <td>${item.description}</td>
-                        <td>${item.score}</td>
-                        <td><span class="delete-btn" onclick="removeScore(${index})">删除</span></td>
-                    `;
-                    scoreList.appendChild(row);
-                });
-            }
+        function showRewardList(button) {
+            removeActiveClass();
+            button.classList.add('active');
+            document.getElementById('schedule-table').style.display = 'none';
+            document.getElementById('record-list').style.display = 'none';
+            document.getElementById('adjust-score').style.display = 'none';
+            document.getElementById('reward-list').style.display = 'table';
         }
 
-        function showModal(activityName) {
-            var modal = document.getElementById("myModal");
-            document.getElementById("activityName").innerText = activityName;
-            document.getElementById("activityScore").innerText = 1;
-            modal.style.display = "block";
-        }
+        function saveScore() {
+            const scoreInput = document.getElementById('score-input');
+            const remarkInput = document.getElementById('remark-input');
+            const score = parseInt(scoreInput.value, 10);
+            const remark = remarkInput.value;
 
-        function openExchangeModal() {
-            var exchangeModal = document.getElementById("exchangeModal");
-            document.getElementById("exchangeMessage").innerText = "";
-            exchangeModal.style.display = "block";
-        }
+            if (score && remark) {
+                const now = new Date().toLocaleString();
+                const record = {
+                    time: now,
+                    description: remark,
+                    score: score
+                };
 
-        function exchangeProduct(productName, productPrice) {
-            if (totalScore >= productPrice) {
-                const date = new Date().toLocaleDateString();
-                scores.push({ date, description: `兑换 ${productName}`, score: -productPrice });
-                totalScore -= productPrice;
-                document.getElementById('totalScoreSchedule').textContent = totalScore;
-                document.getElementById('totalScoreScores').textContent = totalScore;
-                renderScores();
-                document.getElementById("exchangeMessage").innerText = `成功兑换 ${productName}!`;
-                // 保存积分数据到 localStorage
-                localStorage.setItem('scores', JSON.stringify(scores));
-                localStorage.setItem('totalScore', JSON.stringify(totalScore));
+                let records = JSON.parse(localStorage.getItem('records')) || [];
+                records.push(record);
+                localStorage.setItem('records', JSON.stringify(records));
+
+                updateTotalScore(score);
+
+                scoreInput.value = '';
+                remarkInput.value = '';
+
+                showToast('积分已保存！');
             } else {
-                document.getElementById("exchangeMessage").innerText = `积分不足，无法兑换 ${productName}.`;
+                showToast('请输入有效的积分和备注信息。', true);
             }
         }
+
+        function exchangeReward(rewardName, rewardScore) {
+            const totalScore = parseInt(document.getElementById('totalScoreSchedule').innerText, 10);
+
+            if (totalScore >= rewardScore) {
+                const now = new Date().toLocaleString();
+                const record = {
+                    time: now,
+                    description: `兑换 ${rewardName}`,
+                    score: -rewardScore
+                };
+
+                let records = JSON.parse(localStorage.getItem('records')) || [];
+                records.push(record);
+                localStorage.setItem('records', JSON.stringify(records));
+
+                updateTotalScore(-rewardScore);
+
+                showToast(`${rewardName} 已成功兑换！`);
+            } else {
+                showToast('积分不足，无法兑换该奖励。', true);
+            }
+        }
+
+        function updateTotalScore(change) {
+            const currentScore = parseInt(document.getElementById('totalScoreSchedule').innerText, 10);
+            const newScore = currentScore + change;
+            document.getElementById('totalScoreSchedule').innerText = newScore;
+        }
+
+        function loadRecords() {
+            const records = JSON.parse(localStorage.getItem('records')) || [];
+            // 按时间倒序排序
+            records.sort((a, b) => new Date(b.time) - new Date(a.time));
+            const tbody = document.querySelector('#record-list tbody');
+            tbody.innerHTML = '';
+
+            records.forEach(record => {
+                const row = document.createElement('tr');
+
+                const timeCell = document.createElement('td');
+                timeCell.textContent = record.time;
+                row.appendChild(timeCell);
+
+                const descCell = document.createElement('td');
+                descCell.textContent = record.description;
+                row.appendChild(descCell);
+
+                const scoreCell = document.createElement('td');
+                scoreCell.textContent = record.score;
+                row.appendChild(scoreCell);
+
+                const actionCell = document.createElement('td');
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = '删除';
+                deleteButton.onclick = () => deleteRecord(record);
+                actionCell.appendChild(deleteButton);
+                row.appendChild(actionCell);
+
+                tbody.appendChild(row);
+            });
+        }
+
+        function deleteRecord(record) {
+            let records = JSON.parse(localStorage.getItem('records')) || [];
+            const index = records.findIndex(r => r.time === record.time && r.description === record.description && r.score === record.score);
+            if (index > -1) {
+                records.splice(index, 1);
+                localStorage.setItem('records', JSON.stringify(records));
+                updateTotalScore(-record.score);
+                loadRecords();
+                showToast('记录已删除！');
+            } else {
+                showToast('删除失败，请重试。', true);
+            }
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast' + (isError ? ' error' : '');
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = 0;
+                setTimeout(() => {
+                    toast.remove();
+                }, 1500);
+            }, 1500);
+        }
+
+        function addCourseClickListeners() {
+            const cells = document.querySelectorAll('#schedule-table td[data-activity]');
+            cells.forEach(cell => {
+                cell.addEventListener('click', () => {
+                    const activity = cell.getAttribute('data-activity');
+                    const now = new Date().toLocaleString();
+
+                    const record = {
+                        time: now,
+                        description: activity,
+                        score: 1
+                    };
+
+                    let records = JSON.parse(localStorage.getItem('records')) || [];
+                    records.push(record);
+                    localStorage.setItem('records', JSON.stringify(records));
+
+                    updateTotalScore(1);
+                    loadRecords();
+                    showToast(`获得1积分：${activity}`);
+                });
+            });
+        }
+
+        // Initialize total score from local storage and show schedule by default
+        window.onload = function() {
+            const records = JSON.parse(localStorage.getItem('records')) || [];
+            const totalScore = records.reduce((sum, record) => sum + record.score, 0);
+            document.getElementById('totalScoreSchedule').innerText = totalScore;
+            loadRecords();
+            addCourseClickListeners();
+            showSchedule(document.querySelector('.switch-btn:first-child')); // 默认显示课程表
+        };
     </script>
 </body>
+
 </html>
+
+
+
