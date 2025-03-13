@@ -131,3 +131,31 @@ function exchangeProduct(productName, productPrice) {
         document.getElementById("exchangeMessage").innerText = `积分不足，无法兑换 ${productName}.`;
     }
 }
+
+// 打开添加额外积分模态框
+function openAddScoreModal() {
+    const addScoreModal = document.getElementById('addScoreModal');
+    addScoreModal.style.display = 'block';
+}
+
+// 添加额外积分
+function addExtraScore() {
+    const scoreValue = parseInt(document.getElementById('scoreValue').value);
+    const scoreNote = document.getElementById('scoreNote').value;
+
+    // 将手动添加的积分记录到 scores 数组中
+    const date = new Date().toLocaleDateString();
+    scores.push({ date, description: `额外积分：${scoreNote}`, score: scoreValue });
+
+    // 更新总积分
+    totalScore += scoreValue;
+    document.getElementById('totalScoreSchedule').textContent = totalScore;
+    document.getElementById('totalScoreScores').textContent = totalScore;
+
+    // 重新渲染积分记录
+    renderScores();
+
+    // 关闭模态框
+    const addScoreModal = document.getElementById('addScoreModal');
+    addScoreModal.style.display = 'none';
+}

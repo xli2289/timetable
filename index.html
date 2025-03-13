@@ -18,6 +18,8 @@
             <span class="total-score-label">总积分:</span>
             <span class="total-score-value" id="totalScoreSchedule">0</span>
             <button class="btn" onclick="openExchangeModal()">兑换积分</button>
+            <!-- 添加额外积分按钮 -->
+            <button class="btn" onclick="openAddScoreModal()">添加额外积分</button>
         </div>
         <table>
             <thead>
@@ -86,6 +88,8 @@
             <span class="total-score-label">总积分:</span>
             <span class="total-score-value" id="totalScoreScores">0</span>
             <button class="btn" onclick="openExchangeModal()">兑换积分</button>
+            <!-- 添加额外积分按钮 -->
+            <button class="btn" onclick="openAddScoreModal()">添加额外积分</button>
         </div>
         <table class="score-table">
             <thead>
@@ -130,5 +134,19 @@
 </body>
 </html>
 
+
+
+<!-- 添加额外积分模态框 -->
+<div id="addScoreModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>添加额外积分</h3>
+        <label for="scoreValue">积分分值:</label>
+        <input type="number" id="scoreValue" min="1" required>
+        <label for="scoreNote">备注信息:</label>
+        <input type="text" id="scoreNote" required>
+        <button onclick="addExtraScore()">确定</button>
+    </div>
+</div>
 
 
