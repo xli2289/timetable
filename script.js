@@ -138,24 +138,32 @@ function openAddScoreModal() {
     addScoreModal.style.display = 'block';
 }
 
-// 添加额外积分
+// 获取额外积分模态框
+var extraScoreModal = document.getElementById("extraScoreModal");
+
+// 获取关闭额外积分模态框的按钮
+var extraScoreCloseBtn = document.getElementsByClassName("extra-score-close")[0];
+
+// 打开额外积分模态框的函数
+function openExtraScoreModal() {
+    extraScoreModal.style.display = "block";
+}
+
+// 关闭额外积分模态框的函数
+extraScoreCloseBtn.onclick = function() {
+    extraScoreModal.style.display = "none";
+}
+
+// 添加额外积分的函数
 function addExtraScore() {
-    const scoreValue = parseInt(document.getElementById('scoreValue').value);
-    const scoreNote = document.getElementById('scoreNote').value;
+    var description = document.getElementById("extraScoreDescription").value;
+    var score = parseInt(document.getElementById("extraScoreValue").value);
 
-    // 将手动添加的积分记录到 scores 数组中
-    const date = new Date().toLocaleDateString();
-    scores.push({ date, description: `额外积分：${scoreNote}`, score: scoreValue });
+    if (description && score) {
+        // 这里可以添加逻辑来更新总积分和分数列表
+        // ...
 
-    // 更新总积分
-    totalScore += scoreValue;
-    document.getElementById('totalScoreSchedule').textContent = totalScore;
-    document.getElementById('totalScoreScores').textContent = totalScore;
-
-    // 重新渲染积分记录
-    renderScores();
-
-    // 关闭模态框
-    const addScoreModal = document.getElementById('addScoreModal');
-    addScoreModal.style.display = 'none';
+        // 关闭模态框
+        extraScoreModal.style.display = "none";
+    }
 }

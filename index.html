@@ -88,8 +88,8 @@
             <span class="total-score-label">总积分:</span>
             <span class="total-score-value" id="totalScoreScores">0</span>
             <button class="btn" onclick="openExchangeModal()">兑换积分</button>
-            <!-- 添加额外积分按钮 -->
-            <button class="btn" onclick="openAddScoreModal()">添加额外积分</button>
+            <!-- 添加一个按钮用于打开额外积分模态框 -->
+            <button class="btn" onclick="openExtraScoreModal()">添加额外积分</button>
         </div>
         <table class="score-table">
             <thead>
@@ -105,11 +105,24 @@
         </table>
     </div>
 
-    <!-- The Modal -->
+    <!-- 原有的活动积分模态框 -->
     <div id="myModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <p>参与 "<span id="activityName"></span>" 活动获得 <span id="activityScore">1</span> 分！</p>
+        </div>
+    </div>
+
+    <!-- 新的额外积分模态框 -->
+    <div id="extraScoreModal" class="modal">
+        <div class="modal-content">
+            <span class="extra-score-close">&times;</span>
+            <h3>添加额外积分</h3>
+            <label for="extraScoreDescription">描述:</label>
+            <input type="text" id="extraScoreDescription" placeholder="请输入描述">
+            <label for="extraScoreValue">分数值:</label>
+            <input type="number" id="extraScoreValue" placeholder="请输入分数">
+            <button onclick="addExtraScore()">确认添加</button>
         </div>
     </div>
 
@@ -133,20 +146,4 @@
     <script src="script.js"></script>
 </body>
 </html>
-
-
-
-<!-- 添加额外积分模态框 -->
-<div id="addScoreModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h3>添加额外积分</h3>
-        <label for="scoreValue">积分分值:</label>
-        <input type="number" id="scoreValue" min="1" required>
-        <label for="scoreNote">备注信息:</label>
-        <input type="text" id="scoreNote" required>
-        <button onclick="addExtraScore()">确定</button>
-    </div>
-</div>
-
 
